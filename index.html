@@ -17,31 +17,25 @@
           font-weight:600; font-size:15px; }
     .btn.primary{ background:#22c55e; color:#fff; }
     .btn.google{ background:#4285F4; color:#fff; }
-    .btn.facebook{ background:#1877F2; color:#fff; }
-    .btn.apple{ background:#000; color:#fff; }
     .divider{ height:1px; background:rgba(255,255,255,0.2); margin:18px 0; }
     .muted{ color:#94a3b8; font-size:13px; text-align:center; margin-top:10px; }
+    .hidden{ display:none; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Welcome</h1>
-    <p class="muted">Sign in with Google, Facebook, Apple or Email</p>
+    <p class="muted">Sign in with Google or Email</p>
 
     <!-- Google button -->
     <button id="googleBtn" class="btn google">Continue with Google</button>
-    <!-- Facebook button -->
-    <button id="facebookBtn" class="btn facebook">Continue with Facebook</button>
-    <!-- Apple button -->
-    <button id="appleBtn" class="btn apple">Continue with Apple</button>
 
     <div class="divider"></div>
 
-    <!-- Email + Password form -->
+    <!-- Email form -->
     <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button id="emailSignUp" class="btn primary">Sign Up with Email</button>
-    <button id="emailSignIn" class="btn primary" style="background:#16a34a">Sign In with Email</button>
+    <input type="password" id="password" placeholder="Password" class="hidden" />
+    <button id="checkEmailBtn" class="btn primary">Continue</button>
 
     <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
   </div>
@@ -54,11 +48,10 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signInWithPopup,
-             createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+    import { getAuth, GoogleAuthProvider, signInWithPopup,
+             createUserWithEmailAndPassword, signInWithEmailAndPassword, fetchSignInMethodsForEmail }
              from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBtzDdNmsRFnae97b791j2zMvxKluhBvKg",
       authDomain: "test-cd3b3.firebaseapp.com",
@@ -72,10 +65,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const googleProvider = new GoogleAuthProvider();
-    const facebookProvider = new FacebookAuthProvider();
-    const appleProvider = new OAuthProvider("apple.com");
 
-    // Toast helper
     const toast = document.getElementById("toast");
     const showToast = (msg)=>{
       toast.style.display="block"; toast.textContent=msg;
@@ -90,39 +80,41 @@
       }catch(err){ showToast("Error: "+err.message); }
     });
 
-    // Facebook sign-in
-    document.getElementById("facebookBtn").addEventListener("click", async()=>{
-      try{
-        const result = await signInWithPopup(auth, facebookProvider);
-        showToast("Welcome " + result.user.displayName);
-      }catch(err){ showToast("Error: "+err.message); }
-    });
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const checkEmailBtn = document.getElementById("checkEmailBtn");
 
-    // Apple sign-in
-    document.getElementById("appleBtn").addEventListener("click", async()=>{
-      try{
-        const result = await signInWithPopup(auth, appleProvider);
-        showToast("Welcome " + (result.user.displayName || result.user.email));
-      }catch(err){ showToast("Error: "+err.message); }
-    });
+    checkEmailBtn.addEventListener("click", async()=>{
+      const email = emailInput.value;
+      if(!email) return showToast("Enter a valid email.");
 
-    // Email sign-up
-    document.getElementById("emailSignUp").addEventListener("click", async()=>{
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
       try{
-        await createUserWithEmailAndPassword(auth, email, password);
-        showToast("Account created successfully!");
-      }catch(err){ showToast("Error: "+err.message); }
-    });
-
-    // Email sign-in
-    document.getElementById("emailSignIn").addEventListener("click", async()=>{
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try{
-        await signInWithEmailAndPassword(auth, email, password);
-        showToast("Signed in successfully!");
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if(methods.length > 0){
+          // Email exists -> show password field for sign-in
+          passwordInput.classList.remove("hidden");
+          checkEmailBtn.textContent = "Sign In";
+          checkEmailBtn.onclick = async()=>{
+            const password = passwordInput.value;
+            if(!password) return showToast("Enter your password.");
+            try{
+              await signInWithEmailAndPassword(auth, email, password);
+              showToast("Signed in successfully!");
+            }catch(err){ showToast("Error: "+err.message); }
+          };
+        }else{
+          // Email not found -> show password field for sign-up
+          passwordInput.classList.remove("hidden");
+          checkEmailBtn.textContent = "Sign Up";
+          checkEmailBtn.onclick = async()=>{
+            const password = passwordInput.value;
+            if(!password) return showToast("Enter a password.");
+            try{
+              await createUserWithEmailAndPassword(auth, email, password);
+              showToast("Account created successfully!");
+            }catch(err){ showToast("Error: "+err.message); }
+          };
+        }
       }catch(err){ showToast("Error: "+err.message); }
     });
   </script>
