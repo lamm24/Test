@@ -8,19 +8,15 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Global Styles */
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
       background: linear-gradient(135deg, #0b0f17, #111827);
       color: #fff;
-      transition: background 0.3s ease;
     }
-
-    /* Header */
     header {
       display: flex;
-      justify-content: flex-start; /* Align items to the left */
+      justify-content: flex-start;
       align-items: center;
       padding: 16px 32px;
       background: rgba(17,24,39,0.95);
@@ -31,17 +27,14 @@
       left: 0;
       z-index: 1000;
       box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      gap: 16px; /* space between title and button */
+      gap: 16px;
     }
-
     header h1 {
       margin: 0;
       font-size: 26px;
       font-weight: 700;
-      letter-spacing: 1px;
       color: #fff;
     }
-
     header button {
       padding: 12px 24px;
       border-radius: 12px;
@@ -51,41 +44,22 @@
       color: #fff;
       font-weight: 600;
       font-size: 15px;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
-
-    header button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-
     #userName {
       font-weight: 600;
       font-size: 16px;
       margin-left: 16px;
     }
-
-    /* Modal Overlay */
     .modal-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.65);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 2000;
-      animation: fadeIn 0.3s ease forwards;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    /* Card */
     .card {
       max-width: 420px;
       width: 100%;
@@ -95,76 +69,16 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
       text-align: center;
       position: relative;
-      transform: translateY(-20px);
-      opacity: 0;
-      animation: slideIn 0.35s ease forwards;
     }
-
-    @keyframes slideIn {
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .card h1 {
-      margin: 0 0 12px;
-      font-weight: 700;
-      font-size: 30px;
-      color: #f8fafc;
-    }
-
-    .muted {
-      color: #94a3b8;
-      font-size: 14px;
-      margin: 14px 0 22px;
-      line-height: 1.5;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 16px;
-      margin-top: 12px;
-      border-radius: 16px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 16px;
-      transition: all 0.3s ease;
-    }
-
-    .btn.google {
-      background: #4285F4;
-      color: #fff;
-    }
-
-    .btn.google:hover {
-      background: #357ae8;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-    }
-
-    .close-btn {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: transparent;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: #fff;
-      transition: transform 0.2s;
-    }
-
-    .close-btn:hover {
-      transform: rotate(90deg);
-    }
-
-    /* Toast */
+    .card h1 { margin: 0 0 12px; font-size: 30px; }
+    .muted { color: #94a3b8; font-size: 14px; margin: 14px 0 22px; }
+    .btn { width: 100%; padding: 16px; border-radius: 16px; font-weight: 600; }
+    .btn.google { background: #4285F4; color: #fff; }
+    .btn.google:hover { background: #357ae8; }
+    .close-btn { position: absolute; top: 16px; right: 16px; font-size: 24px; color: #fff; background: none; border: none; cursor: pointer; }
     #toast {
       position: fixed;
-      bottom: 24px;
-      left: 50%;
+      bottom: 24px; left: 50%;
       transform: translateX(-50%);
       background: #0b141f;
       color: #e6f9f0;
@@ -174,12 +88,6 @@
       font-weight: 500;
       box-shadow: 0 8px 24px rgba(0,0,0,0.4);
       z-index: 3000;
-      animation: popIn 0.3s ease forwards;
-    }
-
-    @keyframes popIn {
-      from { transform: translate(-50%, 20px); opacity: 0; }
-      to { transform: translate(-50%, 0); opacity: 1; }
     }
   </style>
 </head>
@@ -197,19 +105,18 @@
       <h1>Join Carssell</h1>
       <p class="muted">Sign up quickly with your Google account.</p>
       <button id="signUpBtn" class="btn google">Sign Up with Google</button>
-      <p class="muted">By continuing, you agree to our <a href="#" style="color:#60a5fa;">Terms & Privacy Policy</a>.</p>
     </div>
   </div>
 
   <!-- Toast -->
-  <div id="toast">
-    <span id="toastMsg"></span>
-  </div>
+  <div id="toast"><span id="toastMsg"></span></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup } 
-           from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getAuth, GoogleAuthProvider, signInWithPopup, 
+      onAuthStateChanged, signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBtzDdNmsRFnae97b791j2zMvxKluhBvKg",
@@ -233,18 +140,14 @@
     };
 
     const userNameDisplay = document.getElementById("userName");
-
-    // Modal logic
-    const openModalBtn = document.getElementById("openModalBtn");
-    const closeModalBtn = document.getElementById("closeModalBtn");
     const modalOverlay = document.getElementById("modalOverlay");
 
-    openModalBtn.addEventListener("click", () => modalOverlay.style.display = "flex");
-    closeModalBtn.addEventListener("click", () => modalOverlay.style.display = "none");
-    modalOverlay.addEventListener("click", (e) => {
-      if(e.target === modalOverlay) modalOverlay.style.display = "none";
-    });
+    // Modal buttons
+    document.getElementById("openModalBtn").addEventListener("click", () => modalOverlay.style.display = "flex");
+    document.getElementById("closeModalBtn").addEventListener("click", () => modalOverlay.style.display = "none");
+    modalOverlay.addEventListener("click", (e) => { if(e.target === modalOverlay) modalOverlay.style.display = "none"; });
 
+    // Google Sign-In
     document.getElementById("signUpBtn").addEventListener("click", async () => {
       try {
         const result = await signInWithPopup(auth, googleProvider);
@@ -256,6 +159,16 @@
         showToast("Error: " + err.message);
       }
     });
+
+    // Stay signed in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        userNameDisplay.textContent = `Hello, ${user.displayName}`;
+      } else {
+        userNameDisplay.textContent = "";
+      }
+    });
   </script>
 </body>
 </html>
+
