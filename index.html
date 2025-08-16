@@ -1,4 +1,4 @@
-      <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* keep your styles from before */
     body{ margin:0; font-family:Inter; background:#0b0f17; color:#fff;
           display:flex; align-items:center; justify-content:center; min-height:100vh; }
     .card{ max-width:460px; width:100%; background:#111827; padding:28px; border-radius:16px; }
@@ -25,7 +24,7 @@
 <body>
   <div class="card">
     <h1>Welcome</h1>
-    <p class="muted">Sign in with Google or Email</p>
+    <p class="muted">Sign in with Google, Email, or Phone</p>
 
     <!-- Google button -->
     <button id="googleBtn" class="btn secondary">Continue with Google</button>
@@ -38,6 +37,15 @@
     <button id="emailSignUp" class="btn primary">Sign Up with Email</button>
     <button id="emailSignIn" class="btn primary" style="background:#16a34a">Sign In with Email</button>
 
+    <div class="divider"></div>
+
+    <!-- Phone sign-in -->
+    <input type="tel" id="phone" placeholder="+1 555-555-5555" />
+    <div id="recaptcha-container"></div>
+    <button id="phoneSendOtp" class="btn secondary">Send OTP</button>
+    <input type="text" id="otp" placeholder="Enter verification code" style="display:none;" />
+    <button id="phoneVerifyOtp" class="btn primary" style="display:none;">Verify Code</button>
+
     <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
   </div>
 
@@ -49,9 +57,11 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup,
-             createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { 
+      getAuth, GoogleAuthProvider, signInWithPopup,
+      createUserWithEmailAndPassword, signInWithEmailAndPassword,
+      RecaptchaVerifier, signInWithPhoneNumber
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -102,6 +112,39 @@
         showToast("Signed in successfully!");
       }catch(err){ showToast("Error: "+err.message); }
     });
+
+    // Phone auth setup
+    let confirmationResult;
+
+    // Setup invisible recaptcha
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+      size: "invisible",
+      callback: (response) => { console.log("Recaptcha verified"); }
+    });
+
+    // Send OTP
+    document.getElementById("phoneSendOtp").addEventListener("click", async()=>{
+      const phoneNumber = document.getElementById("phone").value;
+      try {
+        confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
+        document.getElementById("otp").style.display="block";
+        document.getElementById("phoneVerifyOtp").style.display="block";
+        showToast("OTP sent to " + phoneNumber);
+      } catch (err) {
+        showToast("Error: " + err.message);
+      }
+    });
+
+    // Verify OTP
+    document.getElementById("phoneVerifyOtp").addEventListener("click", async()=>{
+      const code = document.getElementById("otp").value;
+      try {
+        await confirmationResult.confirm(code);
+        showToast("Phone number verified successfully!");
+      } catch (err) {
+        showToast("Error: " + err.message);
+      }
+    });
   </script>
 </body>
-    </html>
+</html>
