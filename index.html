@@ -16,7 +16,9 @@
     .btn{ width:100%; padding:12px; margin-top:10px; border-radius:12px; border:none; cursor:pointer;
           font-weight:600; font-size:15px; }
     .btn.primary{ background:#22c55e; color:#fff; }
-    .btn.secondary{ background:#4285F4; color:#fff; }
+    .btn.google{ background:#4285F4; color:#fff; }
+    .btn.facebook{ background:#1877F2; color:#fff; }
+    .btn.apple{ background:#000; color:#fff; }
     .divider{ height:1px; background:rgba(255,255,255,0.2); margin:18px 0; }
     .muted{ color:#94a3b8; font-size:13px; text-align:center; margin-top:10px; }
   </style>
@@ -24,10 +26,14 @@
 <body>
   <div class="card">
     <h1>Welcome</h1>
-    <p class="muted">Sign in with Google, Email, or Phone</p>
+    <p class="muted">Sign in with Google, Facebook, Apple or Email</p>
 
     <!-- Google button -->
-    <button id="googleBtn" class="btn secondary">Continue with Google</button>
+    <button id="googleBtn" class="btn google">Continue with Google</button>
+    <!-- Facebook button -->
+    <button id="facebookBtn" class="btn facebook">Continue with Facebook</button>
+    <!-- Apple button -->
+    <button id="appleBtn" class="btn apple">Continue with Apple</button>
 
     <div class="divider"></div>
 
@@ -36,15 +42,6 @@
     <input type="password" id="password" placeholder="Password" required />
     <button id="emailSignUp" class="btn primary">Sign Up with Email</button>
     <button id="emailSignIn" class="btn primary" style="background:#16a34a">Sign In with Email</button>
-
-    <div class="divider"></div>
-
-    <!-- Phone sign-in -->
-    <input type="tel" id="phone" placeholder="+1 555-555-5555" />
-    <div id="recaptcha-container"></div>
-    <button id="phoneSendOtp" class="btn secondary">Send OTP</button>
-    <input type="text" id="otp" placeholder="Enter verification code" style="display:none;" />
-    <button id="phoneVerifyOtp" class="btn primary" style="display:none;">Verify Code</button>
 
     <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
   </div>
@@ -57,11 +54,9 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { 
-      getAuth, GoogleAuthProvider, signInWithPopup,
-      createUserWithEmailAndPassword, signInWithEmailAndPassword,
-      RecaptchaVerifier, signInWithPhoneNumber
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getAuth, GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, signInWithPopup,
+             createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -76,7 +71,9 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+    const googleProvider = new GoogleAuthProvider();
+    const facebookProvider = new FacebookAuthProvider();
+    const appleProvider = new OAuthProvider("apple.com");
 
     // Toast helper
     const toast = document.getElementById("toast");
@@ -88,8 +85,24 @@
     // Google sign-in
     document.getElementById("googleBtn").addEventListener("click", async()=>{
       try{
-        const result = await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, googleProvider);
         showToast("Welcome " + result.user.email);
+      }catch(err){ showToast("Error: "+err.message); }
+    });
+
+    // Facebook sign-in
+    document.getElementById("facebookBtn").addEventListener("click", async()=>{
+      try{
+        const result = await signInWithPopup(auth, facebookProvider);
+        showToast("Welcome " + result.user.displayName);
+      }catch(err){ showToast("Error: "+err.message); }
+    });
+
+    // Apple sign-in
+    document.getElementById("appleBtn").addEventListener("click", async()=>{
+      try{
+        const result = await signInWithPopup(auth, appleProvider);
+        showToast("Welcome " + (result.user.displayName || result.user.email));
       }catch(err){ showToast("Error: "+err.message); }
     });
 
@@ -111,39 +124,6 @@
         await signInWithEmailAndPassword(auth, email, password);
         showToast("Signed in successfully!");
       }catch(err){ showToast("Error: "+err.message); }
-    });
-
-    // Phone auth setup
-    let confirmationResult;
-
-    // Setup invisible recaptcha
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-      size: "invisible",
-      callback: (response) => { console.log("Recaptcha verified"); }
-    });
-
-    // Send OTP
-    document.getElementById("phoneSendOtp").addEventListener("click", async()=>{
-      const phoneNumber = document.getElementById("phone").value;
-      try {
-        confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-        document.getElementById("otp").style.display="block";
-        document.getElementById("phoneVerifyOtp").style.display="block";
-        showToast("OTP sent to " + phoneNumber);
-      } catch (err) {
-        showToast("Error: " + err.message);
-      }
-    });
-
-    // Verify OTP
-    document.getElementById("phoneVerifyOtp").addEventListener("click", async()=>{
-      const code = document.getElementById("otp").value;
-      try {
-        await confirmationResult.confirm(code);
-        showToast("Phone number verified successfully!");
-      } catch (err) {
-        showToast("Error: " + err.message);
-      }
     });
   </script>
 </body>
