@@ -8,104 +8,159 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* Global Styles */
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
       background: linear-gradient(135deg, #0b0f17, #111827);
       color: #fff;
+      transition: background 0.3s ease;
     }
+
+    /* Header */
     header {
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-start; /* Align items to the left */
       align-items: center;
       padding: 16px 32px;
-      background: #111827;
+      background: rgba(17,24,39,0.95);
+      backdrop-filter: blur(6px);
       position: fixed;
       width: 100%;
       top: 0;
       left: 0;
       z-index: 1000;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      gap: 16px; /* space between title and button */
     }
+
     header h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fff;
     }
+
     header button {
-      padding: 10px 20px;
-      border-radius: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
       border: none;
       cursor: pointer;
-      background: #4285F4;
+      background: linear-gradient(135deg, #4285F4, #34a853);
       color: #fff;
       font-weight: 600;
-      transition: 0.3s;
+      font-size: 15px;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
+
     header button:hover {
-      background: #357ae8;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
     }
-    /* Modal overlay */
+
+    #userName {
+      font-weight: 600;
+      font-size: 16px;
+      margin-left: 16px;
+    }
+
+    /* Modal Overlay */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.65);
       display: none;
       justify-content: center;
       align-items: center;
       z-index: 2000;
+      animation: fadeIn 0.3s ease forwards;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Card */
     .card {
       max-width: 420px;
       width: 100%;
       background: #1e293b;
-      padding: 36px 28px;
-      border-radius: 20px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      padding: 40px 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
       text-align: center;
       position: relative;
+      transform: translateY(-20px);
+      opacity: 0;
+      animation: slideIn 0.35s ease forwards;
     }
+
+    @keyframes slideIn {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
     .card h1 {
-      margin: 0 0 10px;
+      margin: 0 0 12px;
       font-weight: 700;
-      font-size: 28px;
+      font-size: 30px;
       color: #f8fafc;
     }
+
     .muted {
       color: #94a3b8;
-      font-size: 13px;
-      margin: 12px 0 20px;
+      font-size: 14px;
+      margin: 14px 0 22px;
+      line-height: 1.5;
     }
+
     .btn {
       width: 100%;
-      padding: 14px;
+      padding: 16px;
       margin-top: 12px;
-      border-radius: 14px;
+      border-radius: 16px;
       border: none;
       cursor: pointer;
       font-weight: 600;
-      font-size: 15px;
+      font-size: 16px;
       transition: all 0.3s ease;
     }
+
     .btn.google {
       background: #4285F4;
       color: #fff;
     }
+
     .btn.google:hover {
       background: #357ae8;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     }
+
     .close-btn {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 16px;
+      right: 16px;
       background: transparent;
       border: none;
-      font-size: 22px;
+      font-size: 24px;
       cursor: pointer;
       color: #fff;
+      transition: transform 0.2s;
     }
+
+    .close-btn:hover {
+      transform: rotate(90deg);
+    }
+
+    /* Toast */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -113,28 +168,26 @@
       transform: translateX(-50%);
       background: #0b141f;
       color: #e6f9f0;
-      padding: 14px 20px;
-      border-radius: 12px;
+      padding: 16px 24px;
+      border-radius: 16px;
       display: none;
       font-weight: 500;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
       z-index: 3000;
+      animation: popIn 0.3s ease forwards;
     }
-    #userName {
-      font-weight: 600;
-      font-size: 16px;
-      color: #fff;
-      margin-left: 16px;
+
+    @keyframes popIn {
+      from { transform: translate(-50%, 20px); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Carssell</h1>
-    <div>
-      <span id="userName"></span>
-      <button id="openModalBtn">Sign Up</button>
-    </div>
+    <button id="openModalBtn">Sign Up</button>
+    <span id="userName"></span>
   </header>
 
   <!-- Modal -->
@@ -142,12 +195,13 @@
     <div class="card">
       <button class="close-btn" id="closeModalBtn">&times;</button>
       <h1>Join Carssell</h1>
-      <p class="muted">Sign up quickly with your Google account</p>
+      <p class="muted">Sign up quickly with your Google account.</p>
       <button id="signUpBtn" class="btn google">Sign Up with Google</button>
-      <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
+      <p class="muted">By continuing, you agree to our <a href="#" style="color:#60a5fa;">Terms & Privacy Policy</a>.</p>
     </div>
   </div>
 
+  <!-- Toast -->
   <div id="toast">
     <span id="toastMsg"></span>
   </div>
@@ -195,8 +249,8 @@
       try {
         const result = await signInWithPopup(auth, googleProvider);
         const displayName = result.user.displayName;
-        userNameDisplay.textContent = "Hello, " + displayName;
-        showToast("Welcome " + displayName + "!");
+        userNameDisplay.textContent = `Hello, ${displayName}`;
+        showToast(`Welcome ${displayName}!`);
         modalOverlay.style.display = "none";
       } catch (err) {
         showToast("Error: " + err.message);
