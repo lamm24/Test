@@ -1,247 +1,107 @@
-<!DOCTYPE html><html lang="en">
+      <!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Google Sign-In Demo</title>
+  <title>Sign-In Demo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg: #0b0f17;
-      --card: #111827;
-      --muted: #94a3b8;
-      --text: #e5e7eb;
-      --accent: #4285F4; /* Google blue */
-      --accent-2: #34A853; /* Google green */
-      --accent-3: #FBBC05; /* Google yellow */
-      --accent-4: #EA4335; /* Google red */
-      --ring: rgba(66,133,244,0.5);
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      background: radial-gradient(1200px 600px at 20% -10%, rgba(66,133,244,.08), rgba(0,0,0,0)) ,
-                  radial-gradient(800px 400px at 110% 10%, rgba(234,67,53,.07), rgba(0,0,0,0)),
-                  var(--bg);
-      color: var(--text);
-      display:flex; align-items:center; justify-content:center; padding: 40px 16px;
-    }
-    .card{
-      width: 100%; max-width: 460px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-      border: 1px solid rgba(148,163,184,0.15);
-      backdrop-filter: blur(8px);
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-      position: relative;
-      overflow: hidden;
-    }
-    .card::after{
-      content:""; position:absolute; inset: -1px; border-radius: 24px; pointer-events:none;
-      background: linear-gradient(135deg, rgba(66,133,244,.25), rgba(52,168,83,.15) 40%, rgba(251,188,5,.12) 70%, rgba(234,67,53,.25));
-      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-      -webkit-mask-composite: xor; mask-composite: exclude;
-      padding: 1px;
-    }
-    .card h1{ font-size: 22px; margin: 8px 0 6px; letter-spacing: .2px; }
-    .sub{ color: var(--muted); font-size: 14px; line-height: 1.5; }/* Google button */
-.gbtn{
-  --h: 52px;
-  margin-top: 18px;
-  height: var(--h);
-  width: 100%;
-  border-radius: 14px;
-  border: 1px solid rgba(148,163,184,0.35);
-  background:
-    radial-gradient(120% 180% at 0% 0%, rgba(255,255,255,.1), rgba(255,255,255,0)) ,
-    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
-  display:flex; align-items:center; justify-content:center; gap:12px;
-  font-weight:600; font-size: 15px; color: var(--text);
-  cursor:pointer; position: relative; overflow:hidden;
-  transition: transform .12s ease, border-color .2s ease, box-shadow .2s ease;
-}
-.gbtn:focus-visible{ outline: none; box-shadow: 0 0 0 6px var(--ring); }
-.gbtn:hover{ transform: translateY(-1px); border-color: rgba(148,163,184,0.5); }
-.gbtn:active{ transform: translateY(0); }
-.gbtn .glow{
-  position:absolute; inset:0; pointer-events:none;
-  background: radial-gradient(120px 50px at var(--mx,50%) -10%, rgba(66,133,244,.25), transparent 70%),
-              radial-gradient(200px 80px at calc(var(--mx,50%) + 80px) -15%, rgba(52,168,83,.15), transparent 70%);
-  transition: opacity .2s ease; opacity:.6;
-}
-.gbtn .icon{ width:22px; height:22px; display:inline-flex; }
-.gbtn .spinner{ width:18px; height:18px; border:3px solid rgba(255,255,255,.35); border-top-color: var(--accent); border-radius:50%; animation: spin 1s linear infinite; display:none; }
-@keyframes spin{ to{ transform: rotate(360deg); } }
-.gbtn.loading .label{ opacity: .6; }
-.gbtn.loading .icon{ display:none; }
-.gbtn.loading .spinner{ display:inline-block; }
-
-/* Toast */
-.toast{
-  position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
-  background: #0b141f; color: #e6f9f0;
-  border:1px solid rgba(52,168,83,.45);
-  box-shadow: 0 18px 60px rgba(0,0,0,.35);
-  border-radius: 14px; padding: 14px 16px; display:flex; align-items:center; gap:10px;
-  opacity:0; pointer-events:none; transition: all .35s cubic-bezier(.2,.8,.2,1);
-  z-index: 50;
-}
-.toast.show{ opacity:1; transform: translateX(-50%) translateY(0); pointer-events:auto; }
-.toast .check{ width:18px; height:18px; border-radius: 50%; background: var(--accent-2); display:grid; place-items:center; }
-.toast .check svg{ width:12px; height:12px; }
-
-/* Modal */
-.modal-backdrop{ position:fixed; inset:0; background: rgba(0,0,0,0.55); display:none; align-items:center; justify-content:center; z-index:40; }
-.modal{ width:92%; max-width:480px; background: var(--card); border:1px solid rgba(148,163,184,0.2); border-radius: 20px; padding: 22px; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
-.modal .head{ display:flex; align-items:center; gap:12px; margin-bottom: 10px; }
-.badge{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius: 999px; border:1px solid rgba(52,168,83,.35); color:#d1fae5; background: rgba(52,168,83,.08); font-size: 12px; font-weight: 600; }
-.modal .body{ color:#e5e7eb; line-height:1.6; font-size: 14px; }
-.modal .actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
-.btn{ border:1px solid rgba(148,163,184,0.35); padding:10px 14px; border-radius: 12px; background: transparent; color: var(--text); cursor:pointer; font-weight:600; }
-.btn.primary{ background: linear-gradient(180deg, #22c55e, #16a34a); border-color: rgba(52,168,83,.6); }
-
-.divider{ height:1px; background: linear-gradient(90deg, transparent, rgba(148,163,184,.35), transparent); margin: 16px 0; }
-.muted{ color: var(--muted); font-size: 13px; }
-
-.brand-line{ display:flex; gap:6px; align-items:center; margin-top: 14px; }
-.dot{ width:10px; height:10px; border-radius:50%; }
-.dot.b{ background: var(--accent); }
-.dot.g{ background: var(--accent-2); }
-.dot.y{ background: var(--accent-3); }
-.dot.r{ background: var(--accent-4); }
-
+    /* keep your styles from before */
+    body{ margin:0; font-family:Inter; background:#0b0f17; color:#fff;
+          display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card{ max-width:460px; width:100%; background:#111827; padding:28px; border-radius:16px; }
+    input{ width:100%; padding:12px; margin:8px 0; border-radius:10px; border:1px solid #444;
+           background:#1e293b; color:#fff; font-size:14px; }
+    .btn{ width:100%; padding:12px; margin-top:10px; border-radius:12px; border:none; cursor:pointer;
+          font-weight:600; font-size:15px; }
+    .btn.primary{ background:#22c55e; color:#fff; }
+    .btn.secondary{ background:#4285F4; color:#fff; }
+    .divider{ height:1px; background:rgba(255,255,255,0.2); margin:18px 0; }
+    .muted{ color:#94a3b8; font-size:13px; text-align:center; margin-top:10px; }
   </style>
 </head>
 <body>
-  <div class="card" role="region" aria-label="Authentication">
+  <div class="card">
     <h1>Welcome</h1>
-    <p class="sub">Sign in with Google to continue. We'll confirm right away if a brand-new account was created.</p><button id="googleBtn" class="gbtn" aria-label="Sign in with Google">
-  <span class="glow" aria-hidden="true"></span>
-  <span class="icon" aria-hidden="true">
-    <!-- Google G icon -->
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M43.6 20.5H42V20H24v8h11.3C33.9 31.7 29.5 35 24 35c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 6 1.1 8.2 2.9l5.7-5.7C34.7 3.6 29.6 1.5 24 1.5 11.6 1.5 1.5 11.6 1.5 24S11.6 46.5 24 46.5 46.5 36.4 46.5 24c0-1.1-.1-2.2-.3-3.5z" fill="#FFC107"/>
-      <path d="M6.3 14.7l6.6 4.8C14.6 16.7 18.9 13 24 13c3.1 0 6 1.1 8.2 2.9l5.7-5.7C34.7 6.6 29.6 4.5 24 4.5c-7.2 0-13 5.8-13 13 0 2.5.7 4.9 1.9 6.9l-6.6-4.7z" fill="#FF3D00"/>
-      <path d="M24 46.5c5.4 0 10.3-2.1 13.9-5.6l-6.4-5.2c-2 1.4-4.5 2.3-7.5 2.3-5.5 0-10-3.3-11.7-8L6.7 35c3.6 6.8 10.7 11.5 17.3 11.5z" fill="#4CAF50"/>
-      <path d="M43.6 20.5H42V20H24v8h11.3c-1.1 3.7-5.5 7-11.3 7-5.5 0-10.2-3.7-11.8-8.6l-6.6 5.1C8.3 38.5 15.6 43.5 24 43.5c11.4 0 21.5-10.1 21.5-19.5 0-1.1-.1-2.2-.3-3.5z" fill="#1976D2"/>
-    </svg>
-  </span>
-  <span class="spinner" aria-hidden="true"></span>
-  <span class="label">Continue with Google</span>
-</button>
+    <p class="muted">Sign in with Google or Email</p>
 
-<div class="brand-line" aria-hidden="true">
-  <span class="dot b"></span><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-  <span class="muted">Secure • OAuth 2.0 • Encrypted</span>
-</div>
+    <!-- Google button -->
+    <button id="googleBtn" class="btn secondary">Continue with Google</button>
 
-<div class="divider"></div>
-<p class="muted">By continuing, you agree to our Terms and acknowledge our Privacy Policy.</p>
+    <div class="divider"></div>
 
-  </div>  <!-- Toast (success) -->  <div id="toast" class="toast" role="status" aria-live="polite">
-    <div class="check" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div>
-      <strong id="toastTitle">Account created</strong><br>
-      <span id="toastMsg">You're all set—welcome aboard!</span>
-    </div>
-  </div>  <!-- Modal (new account confirmation) -->  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
-    <div class="modal">
-      <div class="head">
-        <span class="badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Z" fill="rgba(52,168,83,.2)"/><path d="m8 12 2.5 2.5L16 9" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          New Account
-        </span>
-        <h2 id="modalTitle" style="margin:0; font-size:18px">Your account is ready</h2>
-      </div>
-      <p id="modalDesc" class="body">Thanks for signing up with Google. Your account has been created successfully. You can now continue using the app.</p>
-      <div class="actions">
-        <button class="btn" id="closeModal">Close</button>
-        <button class="btn primary" id="goApp">Go to App</button>
-      </div>
-    </div>
-  </div>  <script>
-    // Button hover glow tracking
-    const btn = document.getElementById('googleBtn');
-    btn.addEventListener('pointermove', (e)=>{
-      const rect = btn.getBoundingClientRect();
-      const x = e.clientX - rect.left; btn.style.setProperty('--mx', x + 'px');
-    });
-  </script>  <!-- Firebase (ES modules) -->  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup, getAdditionalUserInfo } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    <!-- Email + Password form -->
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button id="emailSignUp" class="btn primary">Sign Up with Email</button>
+    <button id="emailSignIn" class="btn primary" style="background:#16a34a">Sign In with Email</button>
 
-    // 1) Paste YOUR Firebase config here
+    <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+       background:#0b141f;color:#e6f9f0;padding:12px 16px;border-radius:10px;display:none;">
+    <span id="toastMsg"></span>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup,
+             createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+             from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+    // Firebase config
     const firebaseConfig = {
-    
       apiKey: "AIzaSyBtzDdNmsRFnae97b791j2zMvxKluhBvKg",
-  authDomain: "test-cd3b3.firebaseapp.com",
-  projectId: "test-cd3b3",
-  storageBucket: "test-cd3b3.firebasestorage.app",
-  messagingSenderId: "1071453527204",
-  appId: "1:1071453527204:web:2a2776cafc7d2f4de51a31",
-  measurementId: "G-W78NZSW687",
+      authDomain: "test-cd3b3.firebaseapp.com",
+      projectId: "test-cd3b3",
+      storageBucket: "test-cd3b3.firebasestorage.app",
+      messagingSenderId: "1071453527204",
+      appId: "1:1071453527204:web:2a2776cafc7d2f4de51a31",
+      measurementId: "G-W78NZSW687"
     };
 
-    // 2) Initialize
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
 
-    // UI helpers
-    const toast = document.getElementById('toast');
-    const toastTitle = document.getElementById('toastTitle');
-    const toastMsg = document.getElementById('toastMsg');
-    const modalBackdrop = document.getElementById('modalBackdrop');
-    const closeModal = document.getElementById('closeModal');
-    const goApp = document.getElementById('goApp');
+    // Toast helper
+    const toast = document.getElementById("toast");
+    const showToast = (msg)=>{
+      toast.style.display="block"; toast.textContent=msg;
+      setTimeout(()=> toast.style.display="none", 4000);
+    };
 
-    function showToast(title, msg){
-      toastTitle.textContent = title; toastMsg.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(()=> toast.classList.remove('show'), 4200);
-    }
-    function showModal(){ modalBackdrop.style.display = 'flex'; }
-    function hideModal(){ modalBackdrop.style.display = 'none'; }
-
-    closeModal.addEventListener('click', hideModal);
-    goApp.addEventListener('click', ()=>{
-      hideModal();
-      // Change destination to your app's dashboard/home
-      window.location.href = '/';
-    });
-
-    // 3) Sign in flow
-    const gbtn = document.getElementById('googleBtn');
-    gbtn.addEventListener('click', async ()=>{
+    // Google sign-in
+    document.getElementById("googleBtn").addEventListener("click", async()=>{
       try{
-        gbtn.classList.add('loading'); gbtn.disabled = true;
         const result = await signInWithPopup(auth, provider);
-        const info = getAdditionalUserInfo(result);
-
-        if(info && info.isNewUser){
-          // New registration → show confirmation modal + toast
-          showModal();
-          showToast('Account created', "You're all set—welcome aboard!");
-        }else{
-          // Existing user → greet
-          showToast('Welcome back', 'Signed in successfully.');
-        }
-      }catch(err){
-        console.error(err);
-        showToast('Sign-in failed', err.message || 'Please try again.');
-      }finally{
-        gbtn.classList.remove('loading'); gbtn.disabled = false;
-      }
+        showToast("Welcome " + result.user.email);
+      }catch(err){ showToast("Error: "+err.message); }
     });
-  </script></body>
-</html>
+
+    // Email sign-up
+    document.getElementById("emailSignUp").addEventListener("click", async()=>{
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try{
+        await createUserWithEmailAndPassword(auth, email, password);
+        showToast("Account created successfully!");
+      }catch(err){ showToast("Error: "+err.message); }
+    });
+
+    // Email sign-in
+    document.getElementById("emailSignIn").addEventListener("click", async()=>{
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try{
+        await signInWithEmailAndPassword(auth, email, password);
+        showToast("Signed in successfully!");
+      }catch(err){ showToast("Error: "+err.message); }
+    });
+  </script>
+</body>
+    </html>
