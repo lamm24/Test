@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sophisticated Sign-In</title>
+  <title>Carssell.com</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,10 +13,49 @@
       font-family: 'Inter', sans-serif;
       background: linear-gradient(135deg, #0b0f17, #111827);
       color: #fff;
+    }
+    header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      padding: 16px 32px;
+      background: #111827;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    header button {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #4285F4;
+      color: #fff;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    header button:hover {
+      background: #357ae8;
+    }
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
       justify-content: center;
-      min-height: 100vh;
+      align-items: center;
+      z-index: 2000;
     }
     .card {
       max-width: 420px;
@@ -25,23 +64,18 @@
       padding: 36px 28px;
       border-radius: 20px;
       box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-align: center;
+      position: relative;
     }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
-    }
-    h1 {
+    .card h1 {
       margin: 0 0 10px;
       font-weight: 700;
       font-size: 28px;
-      text-align: center;
       color: #f8fafc;
     }
     .muted {
       color: #94a3b8;
       font-size: 13px;
-      text-align: center;
       margin: 12px 0 20px;
     }
     .btn {
@@ -62,6 +96,16 @@
     .btn.google:hover {
       background: #357ae8;
     }
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      color: #fff;
+    }
     #toast {
       position: fixed;
       bottom: 24px;
@@ -74,18 +118,25 @@
       display: none;
       font-weight: 500;
       box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-      z-index: 100;
+      z-index: 3000;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Welcome Back</h1>
-    <p class="muted">Sign in with Google</p>
+  <header>
+    <h1>Carssell</h1>
+    <button id="openModalBtn">Sign Up</button>
+  </header>
 
-    <button id="googleBtn" class="btn google">Continue with Google</button>
-
-    <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="card">
+      <button class="close-btn" id="closeModalBtn">&times;</button>
+      <h1>Join Carssell</h1>
+      <p class="muted">Sign up quickly with your Google account</p>
+      <button id="signUpBtn" class="btn google">Sign Up with Google</button>
+      <p class="muted">By continuing, you agree to our Terms & Privacy Policy.</p>
+    </div>
   </div>
 
   <div id="toast">
@@ -112,18 +163,30 @@
     const googleProvider = new GoogleAuthProvider();
 
     const toast = document.getElementById("toast");
-    const showToast = (msg)=>{
-      toast.style.display="block";
+    const showToast = (msg) => {
+      toast.style.display = "block";
       toast.textContent = msg;
-      setTimeout(()=> toast.style.display="none", 4000);
+      setTimeout(() => toast.style.display = "none", 4000);
     };
 
-    document.getElementById("googleBtn").addEventListener("click", async()=>{
+    // Modal logic
+    const openModalBtn = document.getElementById("openModalBtn");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const modalOverlay = document.getElementById("modalOverlay");
+
+    openModalBtn.addEventListener("click", () => modalOverlay.style.display = "flex");
+    closeModalBtn.addEventListener("click", () => modalOverlay.style.display = "none");
+    modalOverlay.addEventListener("click", (e) => {
+      if(e.target === modalOverlay) modalOverlay.style.display = "none";
+    });
+
+    document.getElementById("signUpBtn").addEventListener("click", async () => {
       try {
         const result = await signInWithPopup(auth, googleProvider);
-        showToast("Welcome " + result.user.email);
-      } catch(err) { 
-        showToast("Error: " + err.message); 
+        showToast("Welcome " + result.user.displayName + "!");
+        modalOverlay.style.display = "none";
+      } catch (err) {
+        showToast("Error: " + err.message);
       }
     });
   </script>
